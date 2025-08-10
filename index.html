@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flat Earth Rocket Corporation</title>
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#0f1113; --muted:#8e8e93; --accent:#0a84ff;
+      --glass: rgba(255,255,255,0.06); --radius:18px; --container:1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,#040405 0%, #0a0a0b 100%);color:#fff;
+      -webkit-font-smoothing:antialiased;line-height:1.45;overflow-x:hidden;
+    }
+
+    /* ukrywanie głównych elementów kiedy otwarta jest strona szczegółów */
+    body.detail-open header,
+    body.detail-open main,
+    body.detail-open footer {
+      display: none;
+    }
+
+    /* NAV */
+    .nav{position:fixed;left:0;right:0;top:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:14px 20px;backdrop-filter: blur(8px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));border-bottom:1px solid rgba(255,255,255,0.03)}
+    .nav-inner{width:100%;max-width:var(--container);display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#6dd3ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#02102a}
+    .nav-links{display:flex;gap:20px;align-items:center}
+    .nav-links a{color:var(--muted);text-decoration:none;font-weight:600}
+    .cta{padding:8px 14px;border-radius:12px;background:linear-gradient(180deg,var(--accent),#0066cc);color:white;text-decoration:none;font-weight:700}
+
+    /* CONTENT */
+    .hero{padding-top:120px;padding-bottom:120px;display:flex;align-items:center;justify-content:center}
+    .container{width:100%;max-width:var(--container);margin:0 auto;padding:0 24px}
+    .hero-grid{display:grid;grid-template-columns:1fr 520px;gap:48px;align-items:center}
+    .eyebrow{color:var(--accent);font-weight:700;letter-spacing:1px;margin-bottom:12px}
+    h1{font-size:48px;margin:0 0 18px 0;line-height:1.05}
+    p.lead{color:var(--muted);font-size:18px;margin:0 0 26px}
+    .btn{padding:14px 20px;border-radius:14px;font-weight:700;text-decoration:none;cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,var(--accent),#0066cc);color:white}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.08);color:white}
+
+    /* Karty */
+    .rocket-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:28px;border-radius:20px;box-shadow:0 10px 40px rgba(2,6,23,0.6);backdrop-filter: blur(6px);
+      display:block;text-decoration:none;color:inherit;cursor:pointer;transition:all .28s ease;
+    }
+    .rocket-image{width:100%;height:360px;border-radius:14px;background-size:cover;background-position:center;box-shadow:inset 0 -60px 80px rgba(0,0,0,0.45)}
+    .rocket-meta{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+    .specs{color:var(--muted);font-weight:600}
+
+    section{padding:80px 0;border-top:1px solid rgba(255,255,255,0.02)}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+    .card{
+      background:var(--card);padding:22px;border-radius:14px;transition:all .28s ease;cursor:pointer;color:inherit;
+      /* ensure stacking context for transform */
+      transform-origin:center center;
+    }
+
+    /* Hover effect restored: powiększenie + białe tło + czarny tekst */
+    .card:hover,
+    .rocket-card:hover {
+      transform: scale(1.05);
+      background-color: #fff;
+      color: #000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+    .card:hover .muted,
+    .rocket-card:hover .muted {
+      color: #333;
+    }
+
+    /* Drobne efektowanie tytułu */
+    .grid-3 .card h3 { cursor:pointer; display:inline-block; transition:all .18s ease; }
+    .grid-3 .card h3:hover {
+      background-color: #fff;
+      color: #000;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .muted{color:var(--muted)}
+
+    /* Strona szczegółów (pełnoekranowa, jedna instancja, content dynamiczny) */
+    .detail-page{
+      position:fixed;inset:0;z-index:2000;display:none;overflow:auto;background:linear-gradient(180deg,#050607 0%, #070809 100%);
+      padding:40px 16px;
+    }
+    .detail-page.active{display:block}
+    .detail-inner{max-width:1100px;margin:40px auto;background:var(--card);border-radius:14px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,0.7);display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:start}
+    .detail-inner .img{height:420px;border-radius:12px;background-size:cover;background-position:center}
+    .back-btn{display:inline-block;margin-bottom:14px;color:var(--muted);background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:10px;cursor:pointer}
+    .price{color:var(--accent);font-weight:800;font-size:20px;margin:8px 0}
+    .detail-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .pill{background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:10px;font-weight:700}
+
+    /* RESPONSIVE */
+    @media (max-width:980px){
+      .hero-grid{grid-template-columns:1fr}
+      .rocket-image{height:260px}
+      .grid-3{grid-template-columns:1fr}
+      .detail-inner{grid-template-columns:1fr}
+      .detail-inner .img{height:260px}
+      .nav-links{display:none}
+    }
+
+    /* reveal */
+    .reveal{opacity:0;transform:translateY(18px);transition:all .6s cubic-bezier(.2,.9,.25,1)}
+    .reveal.visible{opacity:1;transform:none}
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner container">
+      <div class="brand">
+        <div>
+          <div style="font-weight:700">Flat Earth Rocket Corporation</div>
+          <div class="muted" style="font-size:12px;margin-top:2px">Rocket Technologies</div>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#rakiety">Rakiety</a>
+        <a href="#technologia">Technologia</a>
+        <a href="#misja">Misja</a>
+        <a href="#team">Zespół</a>
+        <a class="cta" href="#kontakt">Skontaktuj się</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow reveal">Nowa era rakiet</div>
+            <h1 class="reveal">Przyszłość rakiet — szybciej i taniej.</h1>
+            <p class="lead reveal">Projektujemy i budujemy wielokrotnego użytku rakiety. Mamy doświadczenie od 2020</p>
+            <div class="hero-cta reveal">
+              <button class="btn primary" onclick="document.querySelector('#rakiety').scrollIntoView({behavior:'smooth', block:'start'})">Poznaj rakiety</button>
+              <button class="btn ghost" onclick="document.querySelector('#misja').scrollIntoView({behavior:'smooth', block:'start'})">Dowiedz się więcej</button>
+            </div>
+            <div style="margin-top:34px;display:flex;gap:18px" class="reveal">
+              <div style="background:var(--glass);padding:14px;border-radius:12px">🛰️ Doświadczenie: 2020</div>
+              <div style="background:var(--glass);padding:14px;border-radius:12px">🚀 Startup młodych osób</div>
+              <div style="background:var(--glass);padding:14px;border-radius:12px">🌐 Lokalizacja: Polska</div>
+            </div>
+          </div>
+
+          <!-- HERO CARD (klik -> detail) -->
+          <div class="rocket-card reveal clickable" data-rocket="abc-rocket" title="Zobacz ABC rocket">
+            <div class="rocket-image" style="background-image:url('ABCRocket.png')"></div>
+            <div class="rocket-meta">
+              <div>
+                <div style="font-weight:800">ABC rocket</div>
+                <div class="muted" style="font-size:13px;margin-top:4px">Wielokrotnego użytku · apogeum - 400m</div>
+              </div>
+              <div class="specs">
+                <div style="text-align:right">Silnik Klasy D<br /><span class="muted" style="font-size:12px">do szybkiego badania</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RAKIETY -->
+    <section id="rakiety">
+      <div class="container">
+        <h2 class="reveal">Nasze rakiety</h2>
+        <p class="muted reveal">Produkty projektowane z myślą o szybkości przygotowania, łatwości integracji i powtarzalności lotów.</p>
+        <div style="height:28px"></div>
+
+        <div class="grid-3">
+          <div class="card reveal clickable" data-rocket="rocket-simon" tabindex="0">
+            <h3>Rocket Simon</h3>
+            <p class="muted">Największa rakieta, planowany start 2025/2026</p>
+            <ul class="muted"><li>Wysokość: 1,5m</li><li>Wielokrotnego użytku</li></ul>
+          </div>
+
+          <div class="card reveal clickable" data-rocket="rocket-filippo" tabindex="0">
+            <h3>Rocket Filippo</h3>
+            <p class="muted">Jeszcze coś tu wpisze.</p>
+            <ul class="muted"><li>Wielokrotnego użytku</li></ul>
+          </div>
+
+          <div class="card reveal clickable" data-rocket="abc-rocket" tabindex="0">
+            <h3>ABC rocket</h3>
+            <p class="muted">Rakieta na najwyższą wysokość</p>
+            <ul class="muted"><li>długa żywotność</li><li>Najbardziej zaawanoswna</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="technologia">
+      <div class="container">
+        <h2 class="reveal">Technologia</h2>
+        <p class="muted reveal">Wykorzystujemy sprawdzone rozwiązania inżynierskie i nasze własne innowacje, aby zredukować koszty i zwiększyć dostępność przestrzeni kosmicznej.</p>
+        <div style="height:28px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div class="card reveal"><h4>Silniki</h4><p class="muted">Rozwijamy saletrowe oraz inne technologie.</p></div>
+          <div class="card reveal"><h4>Odzysk</h4><p class="muted">Rakiety zaprojektowane tak aby mogły być wielokrotnego użytku</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="misja"><div class="container"><h2 class="reveal">Misja</h2><p class="muted reveal">Udowodnić, że Ziemia jest płaska</p></div></section>
+
+    <section id="team">
+      <div class="container">
+        <h2 class="reveal">Zespół</h2>
+        <div style="height:18px"></div>
+        <div class="grid-3">
+          <div class="card reveal"><strong>Mikołaj Pustelnik</strong><div class="muted">CEO — silniki i napędy</div></div>
+          <div class="card reveal"><strong>Maksymilian Gozdek</strong><div class="muted">CO-OWNER — operacje startowe</div></div>
+          <div class="card reveal"><strong>Wojcieh Juszczak</strong><div class="muted">jakaś przybłęda</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kontakt">
+      <div class="container">
+        <h2 class="reveal">Kontakt</h2>
+        <p class="muted reveal">Masz pytania biznesowe, chcesz współpracować lub inwestować? Napisz do nas.</p>
+        <div style="display:flex;gap:24px;margin-top:18px;flex-wrap:wrap">
+          <form id="contact-form" style="flex:1;min-width:280px;" class="reveal" onsubmit="event.preventDefault();alert('Wysłano (demo) — zastąp logikę wysyłania formularza')">
+            <div style="display:flex;gap:8px;flex-direction:column">
+              <input id="contact-name" required placeholder="Imię i nazwisko" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit" />
+              <input id="contact-email" required placeholder="Email" type="email" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit" />
+              <input id="contact-subject" placeholder="Temat" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit" />
+              <textarea id="contact-message" required placeholder="Wiadomość" rows="4" style="padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit"></textarea>
+              <button class="btn primary" type="submit">Wyślij</button>
+            </div>
+          </form>
+
+          <div style="flex:1;min-width:260px;" class="reveal">
+            <div class="card">
+              <div style="font-weight:800">Biuro główne</div>
+              <div class="muted" style="margin-top:8px">Żory, Polska</div>
+              <div style="height:12px"></div>
+              <div class="muted">ferc.rockettechnologies@gmail.com</div>
+              <div style="height:8px"></div>
+              <div class="muted">+48 123 456 789</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="muted">© FERC, Flat Earth Rocket Corporation 2025</div>
+      <div class="muted">Polityka prywatności · Warunki</div>
+    </div>
+  </footer>
+
+  <!-- DETAIL PAGE (jedna sekcja dynamicznie wypełniana) -->
+  <div id="detail-page" class="detail-page" role="dialog" aria-modal="true" aria-hidden="true"></div>
+
+  <script>
+    const rockets = {
+      "rocket-simon": {
+        id: "rocket-simon",
+        title: "Rocket Simon",
+        image: "RocketSimon.png",
+        price: "420 000 pln",
+        description: "Największa rakieta w naszej ofercie, zaprojektowana do testów dużej ładowności.",
+        specs: ["Wysokość: 1,5m", "Wielokrotnego użytku", "Nośność: mialird ton"],
+        email: "ferc.rockettechnologies@gmail.com"
+      },
+      "rocket-filippo": {
+        id: "rocket-filippo",
+        title: "Rocket Filippo",
+        image: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1400&q=80",
+        price: "210 000 pln",
+        description: "Średniej klasy rakieta testowa, elastyczna i tania w eksploatacji.",
+        specs: ["Wielokrotnego użytku", "Szybka integracja payload"],
+        email: "ferc.rockettechnologies@gmail.com"
+      },
+      "abc-rocket": {
+        id: "abc-rocket",
+        title: "ABC rocket",
+        image: "ABCRocket.png",
+        price: "120 000 pln",
+        description: "Rakieta na najwyższą wysokość — zoptymalizowana do szybkich badań atmosferycznych.",
+        specs: ["Długa żywotność", "Najbardziej zaawansowana", "Apogeum: ~400m (demo)"],
+        email: "ferc.rockettechnologies@gmail.com"
+      }
+    };
+
+    const detailPage = document.getElementById('detail-page');
+
+    function renderDetail(id) {
+      const r = rockets[id];
+      if(!r){
+        detailPage.innerHTML = `<div style="max-width:900px;margin:40px auto;color:var(--muted)"><button class="back-btn" id="back-from-notfound">← Powrót</button><h2>Nie znaleziono rakiety</h2></div>`;
+        attachBack();
+        return;
+      }
+
+      document.title = `${r.title} — FERC`;
+
+      detailPage.innerHTML = `
+        <div class="detail-inner" role="document" aria-labelledby="detail-title">
+          <div>
+            <button class="back-btn" id="back-btn">← Powrót</button>
+            <div class="img" style="background-image:url('${r.image}')"></div>
+            <div style="height:12px"></div>
+            <div style="font-weight:800;font-size:20px">${r.title}</div>
+            <div class="muted" style="margin-top:6px">${r.specs.join(' · ')}</div>
+          </div>
+
+          <div>
+            <h1 id="detail-title" style="margin:0 0 8px 0">${r.title}</h1>
+            <div class="price">Cena: ${r.price}</div>
+            <p class="muted">${r.description}</p>
+
+            <div style="height:18px"></div>
+            <div class="detail-actions">
+              <a class="btn primary" href="mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent('Zapytanie o ' + r.title)}">Skontaktuj się mailowo</a>
+              <button class="btn ghost" id="contact-scroll">Formularz kontaktowy</button>
+            </div>
+
+            <div style="height:18px"></div>
+            <div class="card">
+              <strong>Dane techniczne</strong>
+              <div class="muted" style="margin-top:8px">${r.specs.map(s => `<div>${s}</div>`).join('')}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      detailPage.classList.add('active');
+      detailPage.setAttribute('aria-hidden','false');
+      document.body.classList.add('detail-open');
+
+      const backBtn = document.getElementById('back-btn');
+      if(backBtn) backBtn.focus();
+
+      attachBack();
+      const contactScroll = document.getElementById('contact-scroll');
+      if(contactScroll){
+        contactScroll.addEventListener('click', ()=>{
+          document.getElementById('contact-subject').value = `Zapytanie o ${r.title}`;
+          closeDetail(false);
+          setTimeout(()=> {
+            const kontakt = document.getElementById('kontakt');
+            if(kontakt) window.scrollTo({top: kontakt.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+          }, 80);
+        });
+      }
+    }
+
+    function attachBack(){
+      const b = document.getElementById('back-btn') || document.getElementById('back-from-notfound');
+      if(b){
+        b.addEventListener('click', ()=> {
+          history.back();
+        });
+      }
+    }
+
+    function openDetail(id, push = true){
+      if(push) history.pushState({rocket: id}, '', `#rocket/${id}`);
+      renderDetail(id);
+    }
+
+    function closeDetail(push=true){
+      detailPage.classList.remove('active');
+      detailPage.setAttribute('aria-hidden','true');
+      document.body.classList.remove('detail-open');
+      document.title = 'Flat Earth Rocket Corporation';
+      if(push) history.pushState({}, '', location.pathname);
+    }
+
+    window.addEventListener('popstate', (ev)=>{
+      const state = ev.state;
+      if(state && state.rocket){
+        renderDetail(state.rocket);
+      } else {
+        if(detailPage.classList.contains('active')) {
+          closeDetail(false);
+        }
+      }
+    });
+
+    document.querySelectorAll('.clickable').forEach(el=>{
+      el.addEventListener('click', ()=> {
+        const id = el.dataset.rocket;
+        if(id) openDetail(id, true);
+      });
+      el.addEventListener('keydown', (e)=> {
+        if(e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const id = el.dataset.rocket;
+          if(id) openDetail(id, true);
+        }
+      });
+    });
+
+    function routeFromHashOnLoad(){
+      const h = location.hash || '';
+      const m = h.match(/^#rocket\/([\w-]+)/);
+      if(m){
+        const id = m[1];
+        history.replaceState({rocket:id}, '', `#rocket/${id}`);
+        renderDetail(id);
+      } else {
+        history.replaceState({}, '', location.pathname + location.search);
+      }
+    }
+    routeFromHashOnLoad();
+
+    const io = new IntersectionObserver((entries)=>{
+      for(const e of entries) if(e.isIntersecting) e.target.classList.add('visible');
+    }, {threshold:0.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (ev)=>{
+        ev.preventDefault();
+        const id = a.getAttribute('href');
+        if(id==='#') return;
+        const el = document.querySelector(id);
+        if(el){
+          el.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      });
+    });
+
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && detailPage.classList.contains('active')) {
+        history.back();
+      }
+    });
+  </script>
+</body>
+</html>
