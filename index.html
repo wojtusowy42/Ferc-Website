@@ -1,14 +1,21 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Flat Earth Rocket Corporation</title>
-
-  <!-- Ładowanie zewnętrznego pliku CSS -->
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <style>
+    :root{
+      --bg:#0b0b0b; --card:#0f1113; --muted:#8e8e93; --accent:#0a84ff;
+      --glass: rgba(255,255,255,0.06); --radius:18px; --container:1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,#040405 0%, #0a0a0b 100%);color:#fff;
+      -webkit-font-smoothing:antialiased;line-height:1.45;overflow-x:hidden;
+    }
 
     /* ukrywanie głównych elementów kiedy otwarta jest strona szczegółów */
     body.detail-open header,
@@ -294,14 +301,14 @@
     function renderDetail(id) {
       const r = rockets[id];
       if(!r){
-        detailPage.innerHTML = `<div style="max-width:900px;margin:40px auto;color:var(--muted)"><button class="back-btn" id="back-from-notfound">← Powrót</button><h2>Nie znaleziono rakiety</h2></div>`;
+        detailPage.innerHTML = <div style="max-width:900px;margin:40px auto;color:var(--muted)"><button class="back-btn" id="back-from-notfound">← Powrót</button><h2>Nie znaleziono rakiety</h2></div>;
         attachBack();
         return;
       }
 
-      document.title = `${r.title} — FERC`;
+      document.title = ${r.title} — FERC;
 
-      detailPage.innerHTML = `
+      detailPage.innerHTML = 
         <div class="detail-inner" role="document" aria-labelledby="detail-title">
           <div>
             <button class="back-btn" id="back-btn">← Powrót</button>
@@ -325,11 +332,11 @@
             <div style="height:18px"></div>
             <div class="card">
               <strong>Dane techniczne</strong>
-              <div class="muted" style="margin-top:8px">${r.specs.map(s => `<div>${s}</div>`).join('')}</div>
+              <div class="muted" style="margin-top:8px">${r.specs.map(s => <div>${s}</div>).join('')}</div>
             </div>
           </div>
         </div>
-      `;
+      ;
 
       detailPage.classList.add('active');
       detailPage.setAttribute('aria-hidden','false');
@@ -342,7 +349,7 @@
       const contactScroll = document.getElementById('contact-scroll');
       if(contactScroll){
         contactScroll.addEventListener('click', ()=>{
-          document.getElementById('contact-subject').value = `Zapytanie o ${r.title}`;
+          document.getElementById('contact-subject').value = Zapytanie o ${r.title};
           closeDetail(false);
           setTimeout(()=> {
             const kontakt = document.getElementById('kontakt');
@@ -362,7 +369,7 @@
     }
 
     function openDetail(id, push = true){
-      if(push) history.pushState({rocket: id}, '', `#rocket/${id}`);
+      if(push) history.pushState({rocket: id}, '', #rocket/${id});
       renderDetail(id);
     }
 
@@ -404,7 +411,7 @@
       const m = h.match(/^#rocket\/([\w-]+)/);
       if(m){
         const id = m[1];
-        history.replaceState({rocket:id}, '', `#rocket/${id}`);
+        history.replaceState({rocket:id}, '', #rocket/${id});
         renderDetail(id);
       } else {
         history.replaceState({}, '', location.pathname + location.search);
